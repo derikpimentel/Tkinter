@@ -1,109 +1,210 @@
-import tkinter as tk # Biblioteca para criação de janelas
-from tkinter import ttk
-from tkinter import messagebox
+from users import Usuarios
+from tkinter import * # Importando a biblioteca para criação de janelas
 
-# Função para ações de menu
-def new_file():
-    messagebox.showinfo("Novo Arquivo", "Você clicou em Novo Arquivo!")
+class Application:
+    def __init__(self, master=None):
+        self.fonte = ("Verdana", "8")
 
-def exit():
-    root.quit()
+        self.container1 = Frame(master)
+        self.container1["pady"] = 10
+        self.container1.pack()
+        self.container2 = Frame(master)
+        self.container2["padx"] = 20
+        self.container2["pady"] = 5
+        self.container2.pack()
+        self.container3 = Frame(master)
+        self.container3["padx"] = 20
+        self.container3["pady"] = 5
+        self.container3.pack()
+        self.container4 = Frame(master)
+        self.container4["padx"] = 20
+        self.container4["pady"] = 5
+        self.container4.pack()
+        self.container5 = Frame(master)
+        self.container5["padx"] = 20
+        self.container5["pady"] = 5
+        self.container5.pack()
+        self.container6 = Frame(master)
+        self.container6["padx"] = 20
+        self.container6["pady"] = 5
+        self.container6.pack()
+        self.container7 = Frame(master)
+        self.container7["padx"] = 20
+        self.container7["pady"] = 5
+        self.container7.pack()
+        self.container8 = Frame(master)
+        self.container8["padx"] = 20
+        self.container8["pady"] = 10
+        self.container8.pack()
+        self.container9 = Frame(master)
+        self.container9["pady"] = 15
+        self.container9.pack()
 
-# Função para adicionar uma nova linha na tabela
-def new_row():
-    name = txt_name.get()
-    age = txt_age.get()
-    if name and age:
-        tree.insert('', 'end', values=(name, age))
-        txt_name.delete(0, tk.END)
-        txt_age.delete(0, tk.END)
+        self.titulo = Label(self.container1, text="Informe os dados :")
+        self.titulo["font"] = ("Calibri", "9", "bold")
+        self.titulo.pack ()
 
-# Função para remover a linha selecionada
-def delete_row():
-    selected_item = tree.selection()
-    if selected_item:
-        tree.delete(selected_item)
+        self.lblidusuario = Label(self.container2,
+        text="idUsuario:", font=self.fonte, width=10)
+        self.lblidusuario.pack(side=LEFT)
 
-# Criando a janela principal
-root = tk.Tk()
+        self.txtidusuario = Entry(self.container2)
+        self.txtidusuario["width"] = 10
+        self.txtidusuario["font"] = self.fonte
+        self.txtidusuario.pack(side=LEFT)
 
-# Define o título da janela
-root.title("Olá mundo!")
+        self.btnBuscar = Button(self.container2, text="Buscar",
+        font=self.fonte, width=10)
+        self.btnBuscar["command"] = self.buscarUsuario
+        self.btnBuscar.pack(side=RIGHT)
 
-# Define o tamanho da janela (largura x altura)
-root.geometry("500x500")
+        self.lblnome = Label(self.container3, text="Nome:",
+        font=self.fonte, width=10)
+        self.lblnome.pack(side=LEFT)
 
-# Desabilita a maximização
-root.resizable(False, False)
+        self.txtnome = Entry(self.container3)
+        self.txtnome["width"] = 25
+        self.txtnome["font"] = self.fonte
+        self.txtnome.pack(side=LEFT)
 
-# Cria o menu principal
-menu_bar = tk.Menu(root)
+        self.lbltelefone = Label(self.container4, text="Telefone:",
+        font=self.fonte, width=10)
+        self.lbltelefone.pack(side=LEFT)
 
-# Criando o menu "Arquivo"
-menu_file = tk.Menu(menu_bar, tearoff=0)
-menu_file.add_command(label="Novo", command=new_file)  # Adiciona a opção "Novo"
-menu_file.add_command(label="Abrir")  # Adiciona a opção "Abrir"
-menu_file.add_separator()  # Adiciona um separador
-menu_file.add_command(label="Sair", command=exit)  # Adiciona a opção "Sair"
+        self.txttelefone = Entry(self.container4)
+        self.txttelefone["width"] = 25
+        self.txttelefone["font"] = self.fonte
+        self.txttelefone.pack(side=LEFT)
 
-# Adiciona o menu "Arquivo" à barra de menu
-menu_bar.add_cascade(label="Arquivo", menu=menu_file)
+        self.lblemail= Label(self.container5, text="E-mail:",
+        font=self.fonte, width=10)
+        self.lblemail.pack(side=LEFT)
 
-# Criando outro menu, como "Editar"
-menu_edit = tk.Menu(menu_bar, tearoff=0)
-menu_edit.add_command(label="Copiar")
-menu_edit.add_command(label="Colar")
+        self.txtemail = Entry(self.container5)
+        self.txtemail["width"] = 25
+        self.txtemail["font"] = self.fonte
+        self.txtemail.pack(side=LEFT)
 
-# Adiciona o menu "Editar" à barra de menu
-menu_bar.add_cascade(label="Editar", menu=menu_edit)
+        self.lblusuario= Label(self.container6, text="Usuário:",
+        font=self.fonte, width=10)
+        self.lblusuario.pack(side=LEFT)
 
-# Configura a janela para usar essa barra de menu
-root.config(menu=menu_bar)
+        self.txtusuario = Entry(self.container6)
+        self.txtusuario["width"] = 25
+        self.txtusuario["font"] = self.fonte
+        self.txtusuario.pack(side=LEFT)
 
-# Adiciona um rótulo (label) à janela
-label = tk.Label(root, text="Seja bem-vindo!")
-label.pack(pady=20)
+        self.lblsenha= Label(self.container7, text="Senha:",
+        font=self.fonte, width=10)
+        self.lblsenha.pack(side=LEFT)
 
-# Criando a Treeview (Tabela)
-tree = ttk.Treeview(root, columns=("Nome", "Idade"), show="headings")
-tree.heading("Nome", text="Nome")
-tree.heading("Idade", text="Idade")
-tree.column("Nome", width=200)
-tree.column("Idade", width=100)
+        self.txtsenha = Entry(self.container7)
+        self.txtsenha["width"] = 25
+        self.txtsenha["show"] = "*"
+        self.txtsenha["font"] = self.fonte
+        self.txtsenha.pack(side=LEFT)
 
-# Insere a tabela na janela
-tree.pack(pady=20)
+        self.bntInsert = Button(self.container8, text="Inserir",
+        font=self.fonte, width=12)
+        self.bntInsert["command"] = self.inserirUsuario
+        self.bntInsert.pack (side=LEFT)
 
-# Adiciona uma barra de rolagem à tabela
-scrollbar = ttk.Scrollbar(root, orient="vertical", command=tree.yview)
-tree.configure(yscrollcommand=scrollbar.set)
-scrollbar.pack(side="right", fill="y")
+        self.bntAlterar = Button(self.container8, text="Alterar",
+        font=self.fonte, width=12)
+        self.bntAlterar["command"] = self.alterarUsuario
+        self.bntAlterar.pack (side=LEFT)
 
-# Campos de entrada para adicionar novos dados
-frame = tk.Frame(root)
-frame.pack(pady=10)
+        self.bntExcluir = Button(self.container8, text="Excluir",
+        font=self.fonte, width=12)
+        self.bntExcluir["command"] = self.excluirUsuario
+        self.bntExcluir.pack(side=LEFT)
 
-tk.Label(frame, text="Nome:").grid(row=0, column=0, padx=5)
-txt_name = tk.Entry(frame)
-txt_name.grid(row=0, column=1, padx=5)
+        self.lblmsg = Label(self.container9, text="")
+        self.lblmsg["font"] = ("Verdana", "9", "italic")
+        self.lblmsg.pack()
 
-tk.Label(frame, text="Idade:").grid(row=1, column=0, padx=5)
-txt_age = tk.Entry(frame)
-txt_age.grid(row=1, column=1, padx=5)
 
-# Botões para adicionar e remover dados
-frame_btn = tk.Frame(root)
-frame_btn.pack(pady=10)
+    def inserirUsuario(self):
+        user = Usuarios()
 
-btn_new = tk.Button(frame_btn, text="Adicionar", command=new_row)
-btn_new.grid(row=0, column=0, padx=10)
+        user.nome = self.txtnome.get()
+        user.telefone = self.txttelefone.get()
+        user.email = self.txtemail.get()
+        user.usuario = self.txtusuario.get()
+        user.senha = self.txtsenha.get()
 
-btn_delete = tk.Button(frame_btn, text="Remover Selecionado", command=delete_row)
-btn_delete.grid(row=0, column=1, padx=10)
+        self.lblmsg["text"] = user.insertUser()
 
-# Adiciona um botão à janela
-button = tk.Button(root, text="Clique aqui!", command=lambda: print("Botão clicado!"))
-button.pack(pady=10)
+        self.txtidusuario.delete(0, END)
+        self.txtnome.delete(0, END)
+        self.txttelefone.delete(0, END)
+        self.txtemail.delete(0, END)
+        self.txtusuario.delete(0, END)
+        self.txtsenha.delete(0, END)
 
-# Mantêm a janela aberta
+
+
+    def alterarUsuario(self):
+        user = Usuarios()
+
+        user.idusuario = self.txtidusuario.get()
+        user.nome = self.txtnome.get()
+        user.telefone = self.txttelefone.get()
+        user.email = self.txtemail.get()
+        user.usuario = self.txtusuario.get()
+        user.senha = self.txtsenha.get()
+
+        self.lblmsg["text"] = user.updateUser()
+
+        self.txtidusuario.delete(0, END)
+        self.txtnome.delete(0, END)
+        self.txttelefone.delete(0, END)
+        self.txtemail.delete(0, END)
+        self.txtusuario.delete(0, END)
+        self.txtsenha.delete(0, END)
+
+
+
+    def excluirUsuario(self):
+        user = Usuarios()
+
+        user.idusuario = self.txtidusuario.get()
+
+        self.lblmsg["text"] = user.deleteUser()
+
+        self.txtidusuario.delete(0, END)
+        self.txtnome.delete(0, END)
+        self.txttelefone.delete(0, END)
+        self.txtemail.delete(0, END)
+        self.txtusuario.delete(0, END)
+        self.txtsenha.delete(0, END)
+
+
+    def buscarUsuario(self):
+        user = Usuarios()
+
+        idusuario = self.txtidusuario.get()
+
+        self.lblmsg["text"] = user.selectUser(idusuario)
+
+        self.txtidusuario.delete(0, END)
+        self.txtidusuario.insert(INSERT, user.idusuario)
+
+        self.txtnome.delete(0, END)
+        self.txtnome.insert(INSERT, user.nome)
+
+        self.txttelefone.delete(0, END)
+        self.txttelefone.insert(INSERT,user.telefone)
+
+        self.txtemail.delete(0, END)
+        self.txtemail.insert(INSERT, user.email)
+
+        self.txtusuario.delete(0, END)
+        self.txtusuario.insert(INSERT, user.usuario)
+
+        self.txtsenha.delete(0, END)
+        self.txtsenha.insert(INSERT,user.senha)
+
+root = Tk()
+Application(root)
 root.mainloop()
