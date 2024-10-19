@@ -2,47 +2,22 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Treeview
-from pystray import MenuItem as item, Icon
-from PIL import Image
+import pystray
+from pystray import MenuItem as item
+from PIL import Image, ImageDraw
+import threading
 
 class Application:
     def __init__(self, master=None):
-        # Função para mostrar a janela quando o usuário clicar no ícone da bandeja
-        def mostrar_janela(icon, item):
-            icon.stop()  # Para o ícone da bandeja
-            master.deiconify()  # Mostra a janela do Tkinter
-            #master.lift()        # Traz a janela para a frente
-            master.wm_attributes('-topmost', True)  # Coloca a janela como "sempre no topo"
-            master.after(1000, lambda: master.wm_attributes('-topmost', False))  # Remove o "sempre no topo" após 1 segundo
-            #master.focus_force()  # Garante que a janela receba o foco
-
-        # Função para ocultar a janela e enviar para a bandeja do sistema
-        def para_bandeja():
-            master.withdraw()  # Oculta a janela do Tkinter
-            self.icon.run()
-
-        def sair(icon, item):
-            icon.stop()
-            master.quit()
 
         # Define o título da janela
         master.title("Olá mundo!")
 
-        # Criar ícone para a bandeja (um ícone de exemplo usando PIL)
-        self.image = Image.new('RGB', (64, 64), color=(73, 109, 137))
-
-        # Crie o menu com pystray
-        self.submenu = (item('Mostrar', mostrar_janela), item('Sair', sair))  # Usando o menu do pystray
-        self.submenu = (mostrar_janela)
-
-        # Criar e adicionar o ícone na bandeja
-        self.icon = Icon("Tkinter App", self.image, menu=self.submenu)
-
-        # Detectar evento de minimizar a janela
-        master.bind("<Unmap>", lambda event: para_bandeja() if master.state() == 'iconic' else None)
-
         # Define o tamanho da janela (largura x altura)
         #master.geometry("500x500")
+
+        # Detectar evento de minimizar a janela
+        master.bind("<Unmap>", lambda event: self.minimize_to_tray() if master.state() == 'iconic' else None)
 
         # Desabilita a maximização
         master.resizable(False, False)
@@ -124,6 +99,13 @@ class Application:
         self.btn_click["command"] = lambda: print("Botão clicado!")
         self.btn_click.pack(pady=10)
 
+        # Botão de minimizar para a bandeja
+        self.btn_minimize = Button(master, text="Minimizar para a bandeja", command=self.minimize_to_tray)
+        self.btn_minimize.pack(pady=10)
+
+        # Variável para a janela principal (será usada pelo pystray)
+        self.master = master
+
     # Função para ações de menu
     def new_file(self):
         messagebox.showinfo("Novo Arquivo", "Você clicou em Novo Arquivo!")
@@ -142,6 +124,30 @@ class Application:
         selected_item = self.table.selection()
         if selected_item:
             self.table.delete(selected_item)
+
+    # Função para minimizar a janela para a bandeja
+    def minimize_to_tray(self):
+        self.master.withdraw()  # Esconde a janela principal
+        self.create_tray_icon()  # Cria o ícone da bandeja
+
+    # Função para criar o ícone da bandeja
+    def create_tray_icon(self):
+        # Criar imagem para o ícone da bandeja (16x16 px)
+        image = Image.new('RGB', (16, 16), (0, 0, 0))
+        d = ImageDraw.Draw(image)
+        d.rectangle((0, 0, 16, 16), fill=(0, 128, 255))
+
+        # Função para restaurar a janela ao clicar no ícone
+        def restore_window(icon, item):
+            icon.stop()
+            self.master.deiconify()
+
+        # Menu do ícone da bandeja
+        menu = (item('Restaurar', restore_window), item('Sair', lambda icon, item: exit()))
+
+        # Criação do ícone da bandeja
+        self.icon = pystray.Icon("test", image, "App Tkinter", menu)
+        threading.Thread(target=self.icon.run, daemon=True).start()  # Executa o ícone da bandeja em uma nova thread
 
 root = Tk() # Criando a janela principal
 Application(root)
