@@ -6,9 +6,16 @@ import pystray
 from pystray import MenuItem as item
 from PIL import Image, ImageDraw
 import threading
+from new_window import NewWindow
 
 class Application:
     def __init__(self, master=None):
+
+        # Variável para a janela principal (será usada pelo pystray)
+        self.master = master
+
+        # Chama o método de minimizar para a bandeja na inicialização
+        self.minimize_to_tray()
 
         # Define o título da janela
         master.title("Olá mundo!")
@@ -44,6 +51,12 @@ class Application:
 
         # Adiciona o menu "Editar" à barra de menu
         self.menu_bar.add_cascade(label="Editar", menu=self.menu_edit)
+
+        # Adiciona o menu "Janela" à barra de menu
+        self.menu_bar.add_command(label="Janela", command=self.open_new_window)
+
+        # Adiciona o menu "Janela2" à barra de menu
+        self.menu_bar.add_command(label="Janela2", command=self.open_external_window)
 
         # Configura a janela para usar essa barra de menu
         master.config(menu=self.menu_bar)
@@ -103,9 +116,6 @@ class Application:
         self.btn_minimize = Button(master, text="Minimizar para a bandeja", command=self.minimize_to_tray)
         self.btn_minimize.pack(pady=10)
 
-        # Variável para a janela principal (será usada pelo pystray)
-        self.master = master
-
     # Função para ações de menu
     def new_file(self):
         messagebox.showinfo("Novo Arquivo", "Você clicou em Novo Arquivo!")
@@ -138,16 +148,32 @@ class Application:
         d.rectangle((0, 0, 16, 16), fill=(0, 128, 255))
 
         # Função para restaurar a janela ao clicar no ícone
-        def restore_window(icon, item):
+        def restore_window(icon):
             icon.stop()
             self.master.deiconify()
+            
+        def exit(icon):
+            icon.stop()
+            self.master.destroy()
 
         # Menu do ícone da bandeja
-        menu = (item('Restaurar', restore_window), item('Sair', lambda icon, item: exit()))
+        menu = (item('Restaurar', restore_window), item('Sair', exit))
 
         # Criação do ícone da bandeja
         self.icon = pystray.Icon("test", image, "App Tkinter", menu)
         threading.Thread(target=self.icon.run, daemon=True).start()  # Executa o ícone da bandeja em uma nova thread
+
+    def open_new_window(self):
+        # Cria uma nova janela
+        new_window = Toplevel(self.master)
+        new_window.title("Nova Janela")
+        
+        # Adiciona um rótulo à nova janela
+        label = Label(new_window, text="Esta é uma nova janela!")
+        label.pack(pady=20)
+
+    def open_external_window(self):
+        NewWindow(self.master)
 
 root = Tk() # Criando a janela principal
 Application(root)
