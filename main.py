@@ -1,33 +1,80 @@
 # Biblioteca para criação de janelas
+import time
 from tkinter import *
 from tkinter import messagebox
-from tkinter.ttk import Treeview
+from tkinter.ttk import Treeview, Progressbar
 import pystray
 from pystray import MenuItem as item
 from PIL import Image, ImageDraw
 import threading
 from new_window import NewWindow
 
+class LoadingScreen:
+    def __init__(self, master):
+        self.top_master = Toplevel(master.withdraw())
+        self.top_master.geometry("300x100")
+
+        # Remove a barra de título e todos os botões (minimizar, maximizar, fechar)
+        self.top_master.overrideredirect(True)
+        
+        self.label = Label(self.top_master, text="Carregando, por favor aguarde...")
+        self.label.pack(pady=10)
+
+        # Cria uma barra de progresso
+        self.progress = Progressbar(self.top_master, orient="horizontal", mode="determinate", length=250)
+        self.progress.pack(pady=10)
+
+        # Centraliza a janela após o conteúdo ser adicionado
+        self.center_window()
+
+    def center_window(self):
+        # Atualiza as tarefas pendentes para garantir que o tamanho correto seja calculado
+        self.top_master.update_idletasks()
+
+        # Obtém a largura e altura da tela
+        screen_width = self.top_master.winfo_screenwidth()
+        screen_height = self.top_master.winfo_screenheight()
+
+        # Obtém a largura e altura da janela atual
+        width = self.top_master.winfo_width()
+        height = self.top_master.winfo_height()
+
+        # Calcula a posição x e y para centralizar a janela
+        x = (screen_width // 2) - (width // 2)
+        y = (screen_height // 2) - (height // 2)
+
+        # Define a geometria da janela
+        self.top_master.geometry(f"{width}x{height}+{x}+{y}")
+
+    def close(self):
+        self.top_master.destroy()
+
+    def update_progress(self, value):
+        self.progress['value'] = value
+        self.top_master.update_idletasks()  # Atualiza a interface gráfica
+
 class Application:
     def __init__(self, master=None):
-
-        # Variável para a janela principal (será usada pelo pystray)
+        # Variável para a janela principal
         self.master = master
+
+        # Chama a tela de carregamento
+        self.start_loading()
 
         # Chama o método de minimizar para a bandeja na inicialização
         self.minimize_to_tray()
 
         # Define o título da janela
-        master.title("Olá mundo!")
+        self.master.title("Olá mundo!")
 
         # Define o tamanho da janela (largura x altura)
-        #master.geometry("500x500")
+        #self.master.geometry("500x500")
 
         # Detectar evento de minimizar a janela
-        master.bind("<Unmap>", lambda event: self.minimize_to_tray() if master.state() == 'iconic' else None)
+        self.master.bind("<Unmap>", lambda event: self.minimize_to_tray() if master.state() == 'iconic' else None)
 
         # Desabilita a maximização
-        master.resizable(False, False)
+        self.master.resizable(False, False)
 
         self.font = ("Verdana", "8")
 
@@ -39,7 +86,7 @@ class Application:
         self.menu_file.add_command(label="Novo", command=self.new_file) # Adiciona a opção "Novo"
         self.menu_file.add_command(label="Abrir") # Adiciona a opção "Abrir"
         self.menu_file.add_separator() # Adiciona um separador
-        self.menu_file.add_command(label="Sair", command=master.quit) # Adiciona a opção "Sair"
+        self.menu_file.add_command(label="Sair", command=self.master.quit) # Adiciona a opção "Sair"
 
         # Adiciona o menu "Arquivo" à barra de menu
         self.menu_bar.add_cascade(label="Arquivo", menu=self.menu_file)
@@ -115,6 +162,22 @@ class Application:
         # Botão de minimizar para a bandeja
         self.btn_minimize = Button(master, text="Minimizar para a bandeja", command=self.minimize_to_tray)
         self.btn_minimize.pack(pady=10)
+
+    def start_loading(self):
+        # Cria a tela de carregamento
+        loading_screen = LoadingScreen(self.master)
+
+        # Cria uma thread para simular uma operação longa
+        threading.Thread(target=self.long_running_operation, args=(loading_screen,), daemon=True).start()
+
+    def long_running_operation(self, loading_screen):
+        # Simula uma operação longa, atualizando a barra de progresso
+        for i in range(101):  # Simula 100% de progresso
+            time.sleep(0.05)  # Simula uma tarefa que leva tempo
+            loading_screen.update_progress(i)  # Atualiza a barra de progresso
+
+        # Fecha a tela de carregamento após a operação
+        loading_screen.close()
 
     # Função para ações de menu
     def new_file(self):
