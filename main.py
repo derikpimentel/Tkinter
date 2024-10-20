@@ -10,18 +10,18 @@ import threading
 from new_window import NewWindow
 
 class LoadingScreen:
-    def __init__(self, master):
-        self.top_master = Toplevel(master.withdraw())
-        self.top_master.geometry("300x100")
+    def __init__(self, master=None):
+        self.master = Toplevel(master.withdraw())
+        self.master.geometry("300x100")
 
         # Remove a barra de título e todos os botões (minimizar, maximizar, fechar)
-        self.top_master.overrideredirect(True)
+        self.master.overrideredirect(True)
         
-        self.label = Label(self.top_master, text="Carregando, por favor aguarde...")
+        self.label = Label(self.master, text="Carregando, por favor aguarde...")
         self.label.pack(pady=10)
 
         # Cria uma barra de progresso
-        self.progress = Progressbar(self.top_master, orient="horizontal", mode="determinate", length=250)
+        self.progress = Progressbar(self.master, orient="horizontal", mode="determinate", length=250)
         self.progress.pack(pady=10)
 
         # Centraliza a janela após o conteúdo ser adicionado
@@ -29,29 +29,29 @@ class LoadingScreen:
 
     def center_window(self):
         # Atualiza as tarefas pendentes para garantir que o tamanho correto seja calculado
-        self.top_master.update_idletasks()
+        self.master.update_idletasks()
 
         # Obtém a largura e altura da tela
-        screen_width = self.top_master.winfo_screenwidth()
-        screen_height = self.top_master.winfo_screenheight()
+        screen_width = self.master.winfo_screenwidth()
+        screen_height = self.master.winfo_screenheight()
 
         # Obtém a largura e altura da janela atual
-        width = self.top_master.winfo_width()
-        height = self.top_master.winfo_height()
+        width = self.master.winfo_width()
+        height = self.master.winfo_height()
 
         # Calcula a posição x e y para centralizar a janela
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 2) - (height // 2)
 
         # Define a geometria da janela
-        self.top_master.geometry(f"{width}x{height}+{x}+{y}")
+        self.master.geometry(f"{width}x{height}+{x}+{y}")
 
     def close(self):
-        self.top_master.destroy()
+        self.master.destroy()
 
     def update_progress(self, value):
         self.progress['value'] = value
-        self.top_master.update_idletasks()  # Atualiza a interface gráfica
+        self.master.update_idletasks()  # Atualiza a interface gráfica
 
 class Application:
     def __init__(self, master=None):
@@ -60,6 +60,9 @@ class Application:
 
         # Chama a tela de carregamento
         self.start_loading()
+
+        # Lista para armazenar janelas filhas
+        self.child_windows = []
 
         # Chama o método de minimizar para a bandeja na inicialização
         self.minimize_to_tray()
@@ -201,7 +204,15 @@ class Application:
     # Função para minimizar a janela para a bandeja
     def minimize_to_tray(self):
         self.master.withdraw()  # Esconde a janela principal
+        self.close_all_child_windows()
         self.create_tray_icon()  # Cria o ícone da bandeja
+
+    # Função para fechar todas as janelas filhas
+    def close_all_child_windows(self):
+        for window in self.child_windows:
+            if window.winfo_exists():
+                window.destroy()
+        self.child_windows.clear()  # Limpa a lista de janelas filhas
 
     # Função para criar o ícone da bandeja
     def create_tray_icon(self):
@@ -234,9 +245,15 @@ class Application:
         # Adiciona um rótulo à nova janela
         label = Label(new_window, text="Esta é uma nova janela!")
         label.pack(pady=20)
+        
+        # Adiciona a janela filha na lista para rastreamento
+        self.child_windows.append(new_window)
 
     def open_external_window(self):
-        NewWindow(self.master)
+        child = NewWindow(self.master)
+        
+        # Adiciona a janela filha na lista para rastreamento
+        self.child_windows.append(child.master)
 
 root = Tk() # Criando a janela principal
 Application(root)
